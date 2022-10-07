@@ -2,29 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="57465b1d-c146-45b0-b855-1eb1f9365e39" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/constants.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/2022-09-30.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/2022-10-01.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/2022-10-02.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/2022-10-03.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/2022-10-04.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/2022-10-05.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/2022-10-06.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/banner.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/charts.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/preprocess.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/streamlit_emotions.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/streamlit_emotions.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/2021-05-02.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/2021-05-03.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/banner.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/banner.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/get_data.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

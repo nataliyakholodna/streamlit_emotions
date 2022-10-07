@@ -14,6 +14,7 @@ if os.listdir(DATA_PATH):
     for f in os.listdir(DATA_PATH):
         os.remove(os.path.join(DATA_PATH, f))
 
+
 # Banner
 st.image('images/banner.png')
 
@@ -46,7 +47,7 @@ with st.form('form1'):
     search = st.form_submit_button('🔍 Search!')
 
 
-# Collect data
+# ---  Collect data  -----------------------------------------------------------
 if search:
     if end_date <= begin_date:
         st.error('Incorrect date!')
@@ -66,46 +67,50 @@ if search:
         for name, df in dfs.items():
             df.to_csv(DATA_PATH + '/' + name + '.csv', index=False)
 
-# Load csv files
-# Dict in format {'name': pd.DataFrame}, list of names of the files
-dfs, date_options = load_csvs(DATA_PATH)
 
-# Show records for a particular day
-if date_options:
-    day_selected = st.selectbox(label='date', options=date_options)
+# ---  Load Data  --------------------------------------------------------------
+# If data repository is not empty
+if any(os.scandir(DATA_PATH)):
+    # Load csv files
+    # Dict in format {'name': pd.DataFrame}, list of names of the files
+    dfs, date_options = load_csvs(DATA_PATH)
 
-    if day_selected in dfs:
-        df = dfs[day_selected]
-        # Show table
-        fig = show_table(df)
-        st.plotly_chart(fig, use_container_width=True)
+    # Show records for a particular day
+    if date_options:
+        day_selected = st.selectbox(label='date', options=date_options)
 
-# Clean tweets: remove hashtags, mentions and other symbols
-dfs_cleaned = {}
-for day in date_options:
-    dfs_cleaned[day] = clean_tweets(dfs[day])
+        if day_selected in dfs:
+            df = dfs[day_selected]
+            # Show table
+            fig = show_table(df)
+            st.plotly_chart(fig, use_container_width=True)
 
-# if date_options:
-#     day_selected = st.selectbox(label='date', options=date_options, key=2)
-#
-#     if day_selected in dfs:
-#         df = dfs_cleaned[day_selected]
-#         fig = show_table(df)
-#         st.plotly_chart(fig, use_container_width=True)
+    # Clean tweets: remove hashtags, mentions and other symbols
+    dfs_cleaned = {}
+    for day in date_options:
+        dfs_cleaned[day] = clean_tweets(dfs[day])
 
-# Preprocess: tokenize, remove stop-words, lemmatize, apply stemming
-for day in date_options:
-    df = dfs_cleaned[day]
-    df['content_preprocessed'] = [text_preprocess(t, stop_words=True, lemmatize=True) for t in df['content_cleaned']]
-    df['content_preprocessed_with_stopwords'] = [text_preprocess(t) for t in df['content_cleaned']]
+    # if date_options:
+    #     day_selected = st.selectbox(label='date', options=date_options, key=2)
+    #
+    #     if day_selected in dfs:
+    #         df = dfs_cleaned[day_selected]
+    #         fig = show_table(df)
+    #         st.plotly_chart(fig, use_container_width=True)
 
-# if date_options:
-#     day_selected = st.selectbox(label='date', options=date_options, key=3)
-#
-#     if day_selected in dfs:
-#         df = dfs_cleaned[day_selected]
-#         fig = show_table(df)
-#         st.plotly_chart(fig, use_container_width=True)
+    # Preprocess: tokenize, remove stop-words, lemmatize, apply stemming
+    for day in date_options:
+        df = dfs_cleaned[day]
+        df['content_preprocessed'] = [text_preprocess(t, stop_words=True, lemmatize=True) for t in df['content_cleaned']]
+        df['content_preprocessed_with_stopwords'] = [text_preprocess(t) for t in df['content_cleaned']]
+
+    # if date_options:
+    #     day_selected = st.selectbox(label='date', options=date_options, key=3)
+    #
+    #     if day_selected in dfs:
+    #         df = dfs_cleaned[day_selected]
+    #         fig = show_table(df)
+    #         st.plotly_chart(fig, use_container_width=True)
 
 
 
