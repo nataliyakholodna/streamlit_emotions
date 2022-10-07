@@ -1,16 +1,16 @@
 import datetime
 import itertools
 import pandas as pd
-import re
 import snscrape.modules.twitter as sntwitter
 import streamlit as st
 
 import time
+import os
 
 
 # --- Collect data -------------------------------------------------------------
-def collect_tweets(begin_date=datetime.date(2021, 5, 1),
-                   end_date=datetime.date(2021, 5, 3),
+def collect_tweets(begin_date,
+                   end_date,
                    keywords=False,
                    min_favs=10,
                    only_hashtags=False,
@@ -121,65 +121,21 @@ def collect_tweets(begin_date=datetime.date(2021, 5, 1),
     return dataframes
 
 
-# --- Clean data ---------------------------------------------------------------
-
-def clean_tweets(df, keywords=False):
+def load_csvs(path):
     """
-    Accepts dataframe with 'content' column and list of keywords
-    Adds columns 'content_cleaned', 'hashtags'
-    Returns old dataset with new columns
+    Load csv files in dictionary.
 
+    :param path: str, path to folder containing csv files only
+    :return: dict in format {'date': pd.DataFrame}
     """
-    df = df.copy()
-    cleaned = []
-    hashtags = []
+    dfs_dict = {}
+    date_options_ = []
 
-    for tweet in df['content']:
-    #     # replace emojis with words (meanings)
-    #     tweet = emoji.demojize(tweet)
+    for f in os.listdir(path):
+        path_to_csv = os.path.join(path, f)
+        date = f.split('.')[0]
 
-        if keywords:
-            # delete keywords if given
-            for keyword in keywords:
-                tweet = re.sub(keyword.lower(), '', tweet)
-                tweet = re.sub(keyword.upper(), '', tweet)
-                tweet = re.sub(keyword.title(), '', tweet)
+        dfs_dict[date] = pd.read_csv(path_to_csv)
+        date_options_.append(date)
 
-        # find all hashtags
-        hashtag = re.findall(r'#(\w+)', tweet)
-
-        tweet = re.sub('n[\'’]t', ' not', tweet)
-
-        # remove urls
-        url_pattern = re.compile(r'https?://\S+|www\.\S+')
-        tweet = url_pattern.sub(r'', tweet)
-
-        # remove mentions
-        tweet = re.sub('\S*@\S*\s?', '', tweet)
-
-        # remove non-english symbols
-        tweet = re.sub('[^\x00-\x7f]', '', tweet)
-
-        # remove new line characters
-        tweet = re.sub('\s+', ' ', tweet)
-
-        tweet = re.sub('_', ' ', tweet)
-
-        # remove other symbols
-        tweet = re.sub(r'[^\w\s]', ' ', tweet)
-
-        # remove numbers
-        tweet = re.sub('\d+', ' ', tweet)
-
-        tweet = re.sub('amp', '', tweet)
-
-        # remove redundant whitespaces
-        tweet = tweet.strip()
-
-        cleaned.append(tweet)
-        hashtags.append(hashtag)
-
-    df['content_cleaned'] = cleaned
-    df['hashtags'] = hashtags
-
-    return df
+    return dfs_dict, date_options_

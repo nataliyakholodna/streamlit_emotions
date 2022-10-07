@@ -1,42 +1,55 @@
 import streamlit as st
-import pandas as pd
 import datetime
 import os
 
-import plotly.graph_objects as go
+from utils.get_data import collect_tweets, load_csvs
+from utils.charts import show_table
+from utils.preprocess import clean_tweets, text_preprocess
+from constants import *
 
-from utils import collect_tweets
+TODAY = datetime.date.today()
 
-# Header
+# Remove previous data files if any
+if os.listdir(DATA_PATH):
+    for f in os.listdir(DATA_PATH):
+        os.remove(os.path.join(DATA_PATH, f))
+
+# Banner
 st.image('images/banner.png')
 
-# Enter keywords
+# Form for entering search parameters
 with st.form('form1'):
     st.markdown('<h3 style="text-align:center;">Search settings</h3>',
                 unsafe_allow_html=True)
-    keyword = st.text_input('Enter keyword(s), separated by comma or leave blank')
-    col1, col2 = st.columns(2)
-    begin_date = col1.date_input('From', datetime.date(2021, 5, 2))
-    end_date = col2.date_input('Until', datetime.date(2021, 5, 4),
-                               # not working
-                               # min_value=begin_date + datetime.timedelta(days=1)
-                               )
+    # Keywords
+    keyword = st.text_input('Enter keyword(s) separated by comma, or leave blank')
 
+    # Begin, end date
+    col1, col2 = st.columns(2)
+    begin_date = col1.date_input('From', TODAY-datetime.timedelta(7), max_value=TODAY)
+    end_date = col2.date_input('Until', TODAY, max_value=TODAY)
+
+    # Additional search params
     with st.expander('Other search settings'):
-        # st.markdown('<div style="height: 50px; width: 50px; background-color: #555;"></div>',
-        #             unsafe_allow_html=True)
+        # Hashtags, likes, num tweets
         hashtags_checkbox = st.checkbox('Only tweets with hashtags', False)
         col1, col2 = st.columns(2)
         num_tweets_per_day = col1.number_input('Max number of tweets per day', value=100, step=1)
-        min_favs = col1.number_input('Min likes per tweet', value=10, step=1)
+        min_favs = col1.number_input('Min likes per tweet', value=0, step=1)
+        # Location
+        location = st.text_input('Location:')
+        col1, col2 = st.columns(2)
+        coordinates = col1.text_input('Coordinates:')
+        radius = col2.text_input('Radius:')
 
-    search = st.form_submit_button('Submit')
+    # Search button
+    search = st.form_submit_button('🔍 Search!')
 
 
 # Collect data
 if search:
     if end_date <= begin_date:
-        st.error('Date!')
+        st.error('Incorrect date!')
     else:
         keyword_list = keyword.split(',')
         # Split on whitespace and join words to delete space after the words_
@@ -49,54 +62,50 @@ if search:
                              begin_date=begin_date,
                              end_date=end_date)
 
-        if os.listdir('data'):
-            for f in os.listdir('data'):
-                os.remove(os.path.join('data', f))
-
+        # Save dataframes as pdf, one per day
         for name, df in dfs.items():
-            df.to_csv('data/' + name + '.csv', index=False)
+            df.to_csv(DATA_PATH + '/' + name + '.csv', index=False)
 
+# Load csv files
+# Dict in format {'name': pd.DataFrame}, list of names of the files
+dfs, date_options = load_csvs(DATA_PATH)
 
-def load_data():
-    dfs_dict = {}
-    date_options_ = []
-
-    for f in os.listdir('data'):
-        path = os.path.join('data', f)
-        date = f.split('.')[0]
-
-        dfs_dict[date] = pd.read_csv(path)
-        date_options_.append(date)
-    return dfs_dict, date_options_
-
-
-dfs, date_options = load_data()
-
+# Show records for a particular day
 if date_options:
     day_selected = st.selectbox(label='date', options=date_options)
 
     if day_selected in dfs:
-
         df = dfs[day_selected]
-
-        fig = go.Figure(data=[go.Table(
-            columnwidth=[200, 1200],
-            header=dict(values=list(df.columns),
-                        # fill_color='paleturquoise',
-                        align='left'),
-            cells=dict(values=[df.date, df.content],
-                       # fill_color='lavender',
-                       align='left',
-                       font_size=14))
-        ])
-        fig.update_layout(
-            width=1400,
-            height=500,
-            margin=dict(
-                l=0,
-                r=0,
-                t=0
-            )
-        )
-
+        # Show table
+        fig = show_table(df)
         st.plotly_chart(fig, use_container_width=True)
+
+# Clean tweets: remove hashtags, mentions and other symbols
+dfs_cleaned = {}
+for day in date_options:
+    dfs_cleaned[day] = clean_tweets(dfs[day])
+
+# if date_options:
+#     day_selected = st.selectbox(label='date', options=date_options, key=2)
+#
+#     if day_selected in dfs:
+#         df = dfs_cleaned[day_selected]
+#         fig = show_table(df)
+#         st.plotly_chart(fig, use_container_width=True)
+
+# Preprocess: tokenize, remove stop-words, lemmatize, apply stemming
+for day in date_options:
+    df = dfs_cleaned[day]
+    df['content_preprocessed'] = [text_preprocess(t, stop_words=True, lemmatize=True) for t in df['content_cleaned']]
+    df['content_preprocessed_with_stopwords'] = [text_preprocess(t) for t in df['content_cleaned']]
+
+# if date_options:
+#     day_selected = st.selectbox(label='date', options=date_options, key=3)
+#
+#     if day_selected in dfs:
+#         df = dfs_cleaned[day_selected]
+#         fig = show_table(df)
+#         st.plotly_chart(fig, use_container_width=True)
+
+
+
