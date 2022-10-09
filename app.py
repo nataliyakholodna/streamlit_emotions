@@ -7,7 +7,7 @@ from tensorflow import keras
 import pickle
 
 from utils.get_data import collect_tweets, load_csvs
-from utils.charts import show_table,show_bar, show_lines
+from utils.charts import show_table, show_bar, show_lines
 from utils.preprocess import clean_tweets, text_preprocess
 from utils.predict import predict
 from utils.utils import del_folder_content, most_popular_to_days
@@ -52,7 +52,6 @@ with st.form('form1'):
     # Search button
     search_btn = st.form_submit_button('🔍 Search!')
 
-
 # ---  Collect data  -----------------------------------------------------------
 if search_btn:
     # Start date can not be later that end date
@@ -81,7 +80,6 @@ if search_btn:
         # Save collected raw data, named in format 'YYYY-MM-DD.csv'
         for name, df in dfs.items():
             df.to_csv(DATA_PATH + '/' + name + '.csv', index=False)
-
 
 # ---  Load RAW Data  ----------------------------------------------------------
 if any(os.scandir(DATA_PATH)):
@@ -208,3 +206,38 @@ if any(os.scandir(EMOTION_COUNTS_PATH)):
                      colors=list(EMOTION_COLORS.values()))
 
     st.plotly_chart(fig, use_container_width=True)
+
+    ####### TO DO #######
+
+    st.markdown('##')
+    col1, col2 = st.columns([1, 3])
+    day_selected = col1.selectbox(label='View by date:', options=emotion_counts['Date'], key=2)
+    # Select the corresponding dataframe
+    df = emotion_counts[emotion_counts['Date'] == day_selected][list(EMOTION_COLORS.keys())]
+    # Show table
+    prev_day = datetime.datetime.strptime(day_selected, '%Y-%m-%d') - datetime.timedelta(1)
+    prev_day = prev_day.strftime('%Y-%m-%d')
+    col1.write(f'Compare to the previous day: {prev_day}')
+    if prev_day in list(emotion_counts['Date']):
+        df_temp = emotion_counts[(emotion_counts['Date'] == day_selected) | (emotion_counts['Date'] == prev_day)][list(EMOTION_COLORS.keys())]
+        # difference
+        diff = df_temp.iloc[1]-df_temp.iloc[0]
+        col1.write(diff.to_frame().style.applymap(
+            func=lambda x: 'background-color: #FFCCCB' if x < 0 else ('background-color: #90ee90' if x > 0 else None)))
+    else:
+        col1.info('Not enough data...')
+
+
+    ####### TO DO #######
+
+    fig = go.Figure(data=[go.Pie(labels=list(EMOTION_COLORS.keys()),
+                                 values=df.iloc[0],
+                                 hole=0.3,
+                                 textinfo='label+percent'),
+
+                          ])
+
+    fig.update_traces(marker=dict(colors=list(EMOTION_COLORS.values()), line=dict(color='#000000', width=1),
+                                  ), opacity=0.9)
+    fig.update_layout(margin=dict(l=0, r=0, b=0, t=0), showlegend=False, height=300, width=300)
+    col2.plotly_chart(fig, use_container_width=True)
