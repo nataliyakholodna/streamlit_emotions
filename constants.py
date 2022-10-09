@@ -11,3 +11,13 @@ LABELS_TO_EMOTIONS = {0: 'no emotion',
                       6: 'surprise'}
 
 
+EMOTION_COLORS = {
+    'no emotion': '#4895ef',
+    'anger': '#4361ee',
+    'fear': '#3f37c9',
+    'happiness': '#f72585',
+    'sadness': '#7209b7',
+    'surprise': '#b5179e'
+}
+
+

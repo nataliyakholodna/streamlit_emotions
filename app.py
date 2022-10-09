@@ -7,7 +7,7 @@ from tensorflow import keras
 import pickle
 
 from utils.get_data import collect_tweets, load_csvs
-from utils.charts import show_table, show_bar
+from utils.charts import show_table,show_bar, show_lines
 from utils.preprocess import clean_tweets, text_preprocess
 from utils.predict import predict
 from utils.utils import del_folder_content, most_popular_to_days
@@ -192,80 +192,19 @@ if any(os.scandir(DATA_PATH)):
         emotion_counts.to_csv(EMOTION_COUNTS_PATH + '/emotion_counts.csv', index=False)
 
 if any(os.scandir(EMOTION_COUNTS_PATH)):
+    # Read and show df
     emotion_counts = pd.read_csv(EMOTION_COUNTS_PATH + '/emotion_counts.csv')
     st.dataframe(emotion_counts)
 
+    # If all hashtags are NaN --> convert column to string type
     if emotion_counts.hashtags.isnull().all():
         emotion_counts.hashtags = emotion_counts.hashtags.astype(str)
 
-    ###############
-    ###  TO DO  ###
-    ###############
+    # ---  Plot Emotions  ------------------------------------------------------
+    fig = show_lines(df=emotion_counts,
+                     x_col='Date',
+                     y_cols=list(EMOTION_COLORS.keys()),
+                     text_col='hashtags',
+                     colors=list(EMOTION_COLORS.values()))
 
-    fig = go.Figure()
-
-    # preprocess hashtags for each day
-    # for hint on hover
-
-    hvr = []
-    for i in range(len(emotion_counts)):
-        # split string with hashtags
-        txt = emotion_counts['hashtags'].loc[i].split(',')
-        # clean whitespaces
-        txt = [t.strip() for t in txt]
-        # create an array of strings for each day
-        txttt = ''
-        for j in txt:
-            txttt += j + '<br>'
-        if txttt == '<br>':
-            txttt = 'None'
-        hvr.append(txttt)
-
-    hover = 'Date: %{x}' + '<br>Num tweets: %{y}<br>' + '--------------<br>Hashtags:<br>--------------<br><b>%{text}</b>'
-
-    fig.add_trace(go.Scatter(x=emotion_counts['Date'],
-                             y=emotion_counts['no emotion'],
-                             name='no emotion',
-                             line=dict(color='#4895ef'),
-                             hovertemplate=hover,
-                             text=hvr, fill='tozeroy'))
-
-    fig.add_trace(go.Scatter(x=emotion_counts['Date'],
-                             y=emotion_counts['anger'],
-                             name='anger',
-                             line=dict(color='#4361ee'),
-                             hovertemplate=hover,
-                             text=hvr, fill='tozeroy'))
-
-    fig.add_trace(go.Scatter(x=emotion_counts['Date'],
-                             y=emotion_counts['fear'],
-                             name='fear',
-                             line=dict(color='#3f37c9'),
-                             hovertemplate=hover,
-                             text=hvr, fill='tozeroy'))
-
-    fig.add_trace(go.Scatter(x=emotion_counts['Date'],
-                             y=emotion_counts['happiness'],
-                             name='happiness',
-                             line=dict(color='#f72585'),
-                             hovertemplate=hover,
-                             text=hvr, fill='tozeroy'))
-
-    fig.add_trace(go.Scatter(x=emotion_counts['Date'],
-                             y=emotion_counts['sadness'],
-                             name='sadness',
-                             line=dict(color='#7209b7'),
-                             hovertemplate=hover,
-                             text=hvr, fill='tozeroy'))
-
-    fig.add_trace(go.Scatter(x=emotion_counts['Date'],
-                             y=emotion_counts['surprise'],
-                             name='surprise',
-                             line=dict(color='#b5179e'),
-                             hovertemplate=hover,
-                             text=hvr, fill='tozeroy'))
-
-    fig.update_layout(hovermode='closest',
-                      margin=dict(l=0, r=0),
-                      )
     st.plotly_chart(fig, use_container_width=True)
